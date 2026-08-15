@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contemporary Space Shooter — 8 Wave Boss Battle</title>
+  <meta name="description" content="Modern contemporary space shooter with 8 boss waves, 10s cooldown bomb, orbital knife, and datasheet persistence.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="game-wrapper">
+    <!-- HUD Header Bar -->
+    <div class="hud-container">
+      <div class="hud-left">
+        <div class="hud-coin">$</div>
+        <div class="hud-score" id="hud-score-val">0000000000</div>
+      </div>
+      <div class="hud-center">
+        <span id="hud-wave">WAVE 1: HAINAN</span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-lives-icons" id="hud-lives-container">
+          <span class="life-icon"></span>
+          <span class="life-icon"></span>
+          <span class="life-icon"></span>
+        </div>
+        <button id="btn-hud-pause" class="hud-pause-btn" title="Pause Game (P)">⏸️</button>
+      </div>
+    </div>
+
+    <!-- BOOM Bomb Skill & Cooldown HUD Indicator -->
+    <div class="hud-skill-container">
+      <button id="btn-boom-skill" class="boom-skill-btn">
+        <span class="boom-icon">💥</span>
+        <span id="boom-text">BOOM [READY]</span>
+        <div id="boom-cooldown-bar" class="boom-bar-fill"></div>
+      </button>
+    </div>
+
+    <!-- BOSS Health Bar Container -->
+    <div id="boss-hp-container" class="boss-hp-wrapper hidden">
+      <div class="boss-name" id="boss-name-text">HAINAN LEVIATHAN BOSS</div>
+      <div class="boss-hp-bar-bg">
+        <div id="boss-hp-bar-fill" class="boss-hp-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Main Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- TITLE SCREEN MODAL -->
+    <div id="modal-title" class="modal-overlay">
+      <div class="modal-card">
+        <h1 class="title-header">NEXUS SHOOTER</h1>
+        <div class="title-sub">CONTEMPORARY SPACE WARFARE</div>
+        
+        <div class="controls-hint">
+          Controls: <span>WASD / Arrows</span> to Move<br>
+          <span>Space / Mouse</span> to Shoot | <span>B / Shift</span> for BOOM Bomb<br>
+          <span>P / Esc</span> to Pause
+        </div>
+
+        <button id="btn-start-game" class="arcade-btn">START GAME</button>
+        <button id="btn-view-leaderboard" class="arcade-btn btn-secondary">TOP 10 DATASHEET</button>
+      </div>
+    </div>
+
+    <!-- PAUSE MODAL -->
+    <div id="modal-pause" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h1 class="title-header" style="color: var(--primary-neon);">GAME PAUSED</h1>
+        <div class="controls-hint">Press <span>P</span> or <span>Esc</span> to resume</div>
+
+        <button id="btn-resume-game" class="arcade-btn">RESUME</button>
+        <button id="btn-quit-game" class="arcade-btn btn-secondary">QUIT TO MENU</button>
+      </div>
+    </div>
+
+    <!-- BETWEEN-WAVE SHOP MODAL ("CONGRATULATIONS - WAVE CLEARED!") -->
+    <div id="modal-shop" class="modal-overlay hidden">
+      <div class="modal-card shop-modal-card">
+        <h2 class="title-header" style="color: var(--accent-neon); font-size: 22px;">CONGRATULATIONS!</h2>
+        <div class="title-sub" id="shop-wave-title">WAVE CLEARED</div>
+        
+        <div class="shop-credits-bar">
+          COINS EARNED: <span id="shop-coins-val" style="color: var(--gold-neon); font-weight: bold;">$0</span>
+        </div>
+
+        <div class="shop-items-grid">
+          <!-- Item 1: Armor Shield -->
+          <div class="shop-card">
+            <div class="shop-item-icon">🛡️</div>
+            <div class="shop-item-name">ARMOR SHIELD</div>
+            <div class="shop-item-desc">+50 Max Armor HP</div>
+            <button id="buy-armor-btn" class="shop-buy-btn">$500 BUY</button>
+          </div>
+
+          <!-- Item 2: Extra Life -->
+          <div class="shop-card">
+            <div class="shop-item-icon">❤️</div>
+            <div class="shop-item-name">EXTRA LIFE</div>
+            <div class="shop-item-desc">+1 Ship Life</div>
+            <button id="buy-life-btn" class="shop-buy-btn">$800 BUY</button>
+          </div>
+
+          <!-- Item 3: Circled Orbital Knife -->
+          <div class="shop-card">
+            <div class="shop-item-icon">⚔️</div>
+            <div class="shop-item-name">CIRCLED KNIFE</div>
+            <div class="shop-item-desc">Spinning Plasma Blade</div>
+            <button id="buy-knife-btn" class="shop-buy-btn">$1000 BUY</button>
+          </div>
+
+          <!-- Item 4: Weapon Overclock -->
+          <div class="shop-card">
+            <div class="shop-item-icon">⚡</div>
+            <div class="shop-item-name">WEAPON CORE</div>
+            <div class="shop-item-desc">+1 Laser & Fire Rate</div>
+            <button id="buy-weapon-btn" class="shop-buy-btn">$600 BUY</button>
+          </div>
+        </div>
+
+        <button id="btn-next-wave" class="arcade-btn" style="margin-top: 10px;">START NEXT WAVE</button>
+      </div>
+    </div>
+
+    <!-- TOP 10 DATASHEET LEADERBOARD MODAL -->
+    <div id="modal-leaderboard" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2 class="title-header" style="font-size: 20px;">ALL-TIME TOP 10</h2>
+        <div class="title-sub" style="font-size: 16px;">DATASHEET RECORDS</div>
+
+        <div class="datasheet-table-container">
+          <table class="datasheet-table">
+            <thead>
+              <tr>
+                <th>RANK</th>
+                <th>NAME</th>
+                <th>SCORE</th>
+                <th>WAVE</th>
+                <th>DATE</th>
+              </tr>
+            </thead>
+            <tbody id="datasheet-rows">
+              <!-- Dynamically populated from datasheet.json -->
+            </tbody>
+          </table>
+        </div>
+
+        <button id="btn-back-title" class="arcade-btn">MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- INITIALS ENTRY MODAL (When Player Ranks in Top 10) -->
+    <div id="modal-name-entry" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2 class="title-header" style="font-size: 22px; color: var(--gold-neon);">TOP 10 QUALIFIED!</h2>
+        <div class="title-sub">YOU RANKED <span id="qualify-rank-val">#1</span> IN DATASHEET</div>
+
+        <div style="font-size: 14px; margin-top: 6px;">
+          SCORE: <span id="entry-score-val" style="color: var(--accent-neon);">0</span>
+        </div>
+
+        <div class="controls-hint" style="font-size: 14px;">ENTER YOUR 3-LETTER INITIALS:</div>
+
+        <div class="initials-input-container">
+          <div id="initial-box-0" class="initial-box active">A</div>
+          <div id="initial-box-1" class="initial-box">A</div>
+          <div id="initial-box-2" class="initial-box">A</div>
+        </div>
+
+        <div class="controls-hint" style="font-size: 12px;">
+          Use <span>UP/DOWN</span> or <span>W/S</span> to change letter<br>
+          <span>LEFT/RIGHT</span> or <span>A/D</span> to move cursor
+        </div>
+
+        <button id="btn-submit-initials" class="arcade-btn">RECORD IN DATASHEET</button>
+      </div>
+    </div>
+
+    <!-- VICTORY MODAL (All 8 Waves Defeated!) -->
+    <div id="modal-victory" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h1 class="title-header" style="color: var(--gold-neon); font-size: 24px;">VICTORY!</h1>
+        <div class="title-sub">ALL 8 WAVES DEFEATED</div>
+        
+        <div style="font-size: 14px;">
+          FINAL SCORE: <span id="victory-score-val" style="color: var(--accent-neon);">0</span>
+        </div>
+
+        <button id="btn-victory-continue" class="arcade-btn">RECORD DATASHEET</button>
+      </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="modal-gameover" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h1 class="title-header" style="color: var(--secondary-neon);">MISSION FAILED</h1>
+        
+        <div style="font-size: 14px;">
+          FINAL SCORE: <span id="final-score-val" style="color: var(--accent-neon);">0</span>
+        </div>
+        <div style="font-size: 14px;">
+          WAVE REACHED: <span id="final-wave-val" style="color: var(--primary-neon);">1</span>
+        </div>
+
+        <button id="btn-restart-game" class="arcade-btn">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
